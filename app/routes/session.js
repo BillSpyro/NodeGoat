@@ -78,17 +78,17 @@ function SessionHandler(db) {
                     return res.render("login", {
                         userName: userName,
                         password: "",
-                        loginError: invalidUserNameErrorMessage
+
                         //Fix for A2-2 Broken Auth - Uses identical error for both username, password error
-                        // loginError: errorMessage
+                        loginError: errorMessage
                     });
                 } else if (err.invalidPassword) {
                     return res.render("login", {
                         userName: userName,
                         password: "",
-                        loginError: invalidPasswordErrorMessage
+
                         //Fix for A2-2 Broken Auth - Uses identical error for both username, password error
-                        // loginError: errorMessage
+                        loginError: errorMessage
 
                     });
                 } else {
@@ -108,12 +108,17 @@ function SessionHandler(db) {
             // by wrapping the below code as a function callback for the method req.session.regenerate()
             // i.e:
             // `req.session.regenerate(function() {})`
-            req.session.userId = user._id;
-            if (user.isAdmin) {
-              return res.redirect("/benefits");
-            } else {
-              return res.redirect("/dashboard");
-            }
+            req.session.regenerate(function() {
+
+              req.session.userId = user._id;
+
+              if (user.isAdmin) {
+                return res.redirect("/benefits");
+              } else {
+                return res.redirect("/dashboard");
+              }
+
+            })
         });
     };
 
@@ -142,11 +147,11 @@ function SessionHandler(db) {
         var LNAME_RE = /^.{1,100}$/;
         var EMAIL_RE = /^[\S]+@[\S]+\.[\S]+$/;
         var PASS_RE = /^.{1,20}$/;
-        /*
+
         //Fix for A2-2 - Broken Authentication -  requires stronger password
         //(at least 8 characters with numbers and both lowercase and uppercase letters.)
         var PASS_RE =/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-        */
+
 
         errors.userNameError = "";
         errors.firstNameError = "";
@@ -218,7 +223,7 @@ function SessionHandler(db) {
 
                     //prepare data for the user
                     prepareUserData(user, next);
-                    /*
+
                     sessionDAO.startSession(user._id, function(err, sessionId) {
 
                         if (err) return next(err);
@@ -227,7 +232,7 @@ function SessionHandler(db) {
                         req.session.userId = user._id;
                         return res.render("dashboard", user);
                     });
-                    */
+
                     req.session.regenerate(function() {
                         req.session.userId = user._id;
                         // Set userId property. Required for left nav menu links
